@@ -61,12 +61,14 @@
                                 'has-success': $ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index),
                                 'has-error': !$ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index)
                              }">
-                                <input type="text" class="form-control text-center result" placeholder="Rank"
-                                       ng-model="competitor.results[$index]"
-                                       ng-pattern="'^[0-8]$'" required />
+                                <input type="text" class="form-control text-center" placeholder="Rank"
+                                       ng-model="competitor.results[$index]" required
+                                       rank-input="$ctrl.competitors.length" />
                             </div>
                         </td>
-                        <th></th>
+                        <th class="h3">
+                            <b><span ng-bind="competitor.rank"></span></b>
+                        </th>
                     </tr>
                     <tr>
                         <td></td>
@@ -78,7 +80,10 @@
                 </tbody>
             </table>
         </form>
+        <button type="button" class="btn btn-primary" ng-click="$ctrl.calculate()" ng-disabled="!$ctrl.isValid()">
+            <span>Calculate</span>
+            <i class="fa fa-fw fa-calculator"></i>
+        </button>
     </div>
-    {{$ctrl.simpleMajority(1)}}
 </body>
 </html>
