@@ -1,0 +1,84 @@
+﻿<!DOCTYPE html>
+<html ng-app="Competition">
+<head>
+    <meta charset="utf-8" />
+    <title>Competition</title>
+    <link type="text/css" rel="stylesheet" href="Content/bootstrap.yeti.min.css" />
+    <link type="text/css" rel="stylesheet" href="Content/font-awesome.min.css" />
+    <style>
+        body {
+            margin-top: 70px;
+        }
+
+        table.results th, table.results td {
+            text-align: center !important;
+            vertical-align: middle !important;
+            border-collapse: collapse !important;
+            border: 1px solid silver !important;
+        }
+
+        table.results {
+            border-collapse: collapse !important;
+        }
+    </style>
+    <script src="Scripts/angular.min.js"></script>
+    <script src="Scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
+    <script src="Scripts/competition/competition.min.js"></script>
+</head>
+<body ng-controller="competitionController as $ctrl">
+    <div class="container">
+        <form class="form-horizontal">
+            <table class="table table-condensed table-bordered results">
+                <thead>
+                    <tr>
+                        <th rowspan="2">#</th>
+                        <th rowspan="2">Competitor</th>
+                        <th colspan="{{$ctrl.judges.length}}">Judges</th>
+                        <th rowspan="2">Result</th>
+                    </tr>
+                    <tr>
+                        <th ng-repeat="judge in $ctrl.judges">
+                            <span ng-bind="judge"></span>
+                            <ng-switch on="$ctrl.isValidJudge(judge)">
+                                <i ng-switch-when="true" class="fa fa-fw fa-check-circle text-success"></i>
+                                <i ng-switch-when="false" class="fa fa-fw fa-warning text-danger"></i>
+                            </ng-switch>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="competitor in $ctrl.competitorsById">
+                        <th ng-bind="competitor.id"></th>
+                        <th>
+                            <span ng-bind="competitor.name"></span>
+                            <ng-switch on="$ctrl.isValidCompetitor($index)">
+                                <i ng-switch-when="true" class="fa fa-fw fa-check-circle text-success"></i>
+                                <i ng-switch-when="false" class="fa fa-fw fa-warning text-danger"></i>
+                            </ng-switch>
+                        </th>
+                        <td ng-repeat="judge in $ctrl.judges">
+                            <div ng-class="{
+                                'has-success': $ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index),
+                                'has-error': !$ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index)
+                             }">
+                                <input type="text" class="form-control text-center result" placeholder="Rank"
+                                       ng-model="competitor.results[$index]"
+                                       ng-pattern="'^[0-8]$'" required />
+                            </div>
+                        </td>
+                        <th></th>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td ng-repeat="judge in $ctrl.judges">
+                            {{$ctrl.judgeResults(judge)}}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </form>
+    </div>
+    {{$ctrl.simpleMajority(1)}}
+</body>
+</html>
