@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Competition</title>
-    <link type="text/css" rel="stylesheet" href="Content/bootstrap.yeti.min.css" />
+    <link type="text/css" rel="stylesheet" href="Content/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="Content/font-awesome.min.css" />
     <style>
         body {
@@ -24,80 +24,58 @@
         table.results {
             border-collapse: collapse !important;
         }
+
     </style>
     <script src="Scripts/angular.min.js"></script>
     <script src="Scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
     <script src="Scripts/competition/competition.min.js"></script>
 </head>
 <body ng-controller="competitionController as $ctrl">
-    <div class="container">
-        <form class="form-horizontal">
-            <table class="table table-condensed table-bordered results">
-                <thead>
-                    <tr>
-                        <th rowspan="2">#</th>
-                        <th rowspan="2">Competitor</th>
-                        <th colspan="{{$ctrl.judges.length}}">Judges</th>
-                        <th colspan="{{$ctrl.competitors.length}}">Tally</th>
-                        <th rowspan="2">Result</th>
-                    </tr>
-                    <tr>
-                        <th ng-repeat="judge in $ctrl.judges">
-                            <span ng-bind="judge"></span>
-                            <ng-switch on="$ctrl.isValidJudge(judge)">
-                                <i ng-switch-when="true" class="fa fa-fw fa-check-circle text-success"></i>
-                                <i ng-switch-when="false" class="fa fa-fw fa-warning text-danger"></i>
-                            </ng-switch>
-                        </th>
-                        <th ng-repeat="competitor in $ctrl.competitors">
-                            <span>1-{{$index + 1}}</span>
-                        </th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr ng-repeat="competitor in $ctrl.competitorsById">
-                        <th ng-bind="competitor.id"></th>
-                        <th>
-                            <span ng-bind="competitor.name"></span>
-                            <ng-switch on="$ctrl.isValidCompetitor($index)">
-                                <i ng-switch-when="true" class="fa fa-fw fa-check-circle text-success"></i>
-                                <i ng-switch-when="false" class="fa fa-fw fa-warning text-danger"></i>
-                            </ng-switch>
-                        </th>
-                        <td ng-repeat="judge in $ctrl.judges">
-                            <div ng-class="{
-                                'has-success': $ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index),
-                                'has-error': !$ctrl.isValidResult($ctrl.judgeResults(judge), $parent.$index)
-                             }">
-                                <input type="text" class="form-control text-center" placeholder="Rank"
-                                       ng-model="competitor.results[$index]" required
-                                       rank-input="$ctrl.competitors.length" />
+    <div class="container-fluid">
+        <form name="$form" class="was-validated">
+            <div class="card">
+                <div class="card-header bg-dark text-white">
+                    <span class="h4 card-title" ng-bind="$ctrl.competition.name"></span>
+                    <div class="pull-right">
+                        <div class="form-inline">
+                            <div class="form-row">
+                                <div class="form-group form-group-sm">
+                                    <select ng-model="$ctrl.division" ng-options="division as division.name for division in $ctrl.competition.divisions" class="form-control bg-dark text-white input-sm"></select>
+                                </div>
                             </div>
-                        </td>
-                        <td ng-repeat="tally in competitor.tally">
-                            <div ng-class="{ 'text-danger': tally.majority }">
-                                <span ng-bind="tally.count"></span>
-                                <span class="text-muted">({{tally.sum}})</span>
-                            </div>
-                        </td>
-                        <th class="h3">
-                            <b><span ng-bind="competitor.rank"></span></b>
-                        </th>
-                    </tr>
-                    <tr>
-                        <td></td>
-                        <td></td>
-                        <td ng-repeat="judge in $ctrl.judges">
-                            {{$ctrl.judgeResults(judge)}}
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <table class="table table-condensed table-bordered results">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">#</th>
+                                <th rowspan="2">Competitor</th>
+                                <th colspan="{{$ctrl.x}}">Judges</th>
+                            </tr>
+                            <tr>
+                                <th ng-repeat="judge in $ctrl.judges">
+                                    <span ng-bind="judge"></span>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr ng-repeat="competitor in $ctrl.competitors">
+                                <th ng-bind="competitor.id"></th>
+                                <th ng-bind="competitor.name"></th>
+                                <td ng-repeat="judge in $ctrl.judges">
+                                    <div class="form-row">
+                                        <input type="text" ng-model="$ctrl.results[$parent.$index][$index]" class="form-control text-center" results="$ctrl.results" required />
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </form>
-        <button type="button" class="btn btn-primary" ng-click="$ctrl.calculate()" ng-disabled="!$ctrl.isValid()">
-            <span>Calculate</span>
-            <i class="fa fa-fw fa-calculator"></i>
-        </button>
+        {{$form.$valid}}
     </div>
 </body>
 </html>
