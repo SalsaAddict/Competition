@@ -17,6 +17,10 @@
             border: 1px solid silver !important;
         }
 
+        table.results thead th {
+            white-space: nowrap;
+        }
+
         table.results {
             border-collapse: collapse !important;
         }
@@ -34,6 +38,7 @@
                         <th rowspan="2">#</th>
                         <th rowspan="2">Competitor</th>
                         <th colspan="{{$ctrl.judges.length}}">Judges</th>
+                        <th colspan="{{$ctrl.competitors.length}}">Tally</th>
                         <th rowspan="2">Result</th>
                     </tr>
                     <tr>
@@ -43,6 +48,9 @@
                                 <i ng-switch-when="true" class="fa fa-fw fa-check-circle text-success"></i>
                                 <i ng-switch-when="false" class="fa fa-fw fa-warning text-danger"></i>
                             </ng-switch>
+                        </th>
+                        <th ng-repeat="competitor in $ctrl.competitors">
+                            <span>1-{{$index + 1}}</span>
                         </th>
                     </tr>
                 </thead>
@@ -64,6 +72,12 @@
                                 <input type="text" class="form-control text-center" placeholder="Rank"
                                        ng-model="competitor.results[$index]" required
                                        rank-input="$ctrl.competitors.length" />
+                            </div>
+                        </td>
+                        <td ng-repeat="tally in competitor.tally">
+                            <div ng-class="{ 'text-danger': tally.majority }">
+                                <span ng-bind="tally.count"></span>
+                                <span class="text-muted">({{tally.sum}})</span>
                             </div>
                         </td>
                         <th class="h3">

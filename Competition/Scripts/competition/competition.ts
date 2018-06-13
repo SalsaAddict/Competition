@@ -4,7 +4,9 @@ let comp: angular.IModule = angular.module("Competition", ["ui.bootstrap"]);
 
 namespace Competition {
     "use strict";
-    interface ICompetitor { id: number; name: string; results: number[]; rank?: number; }
+    interface ITally { majority: boolean; count: number; sum: number; }
+    interface IPredicate { (competitor: ICompetitor): ITally; }
+    interface ICompetitor { id: number; name: string; results: number[]; tally?: ITally[]; rank?: number; }
     export class Controller implements angular.IController {
         static $inject: string[] = ["$filter", "$log"];
         constructor(private $filter: angular.IFilterService, private $log: angular.ILogService) { }
@@ -63,42 +65,40 @@ namespace Competition {
             }
             return isValid;
         }
-        public doCalc(): void {
-
-        }
-
-
-        public get majority(): number { return Math.ceil(this.judges.length / 2); }
-        public majorityCount(competitor: ICompetitor, rank: number): number {
-            let count: number = 0;
-            for (let i: number = 0; i < competitor.results.length; i++) {
-                if (competitor.results[i] <= rank) count++;
-            }
-            return count;
-        }
-        public simpleMajority(rank: number): ICompetitor[] {
-            let output: ICompetitor[] = [];
+        public tally(): void {
             this.competitors.forEach((competitor: ICompetitor): void => {
-                if (angular.isDefined(competitor.rank)) return;
-                if (this.majorityCount(competitor, rank) >= this.majority) output.push(competitor);
+                competitor.tally = [];
+                for (let i: number = 0; i < this.competitors.length; i++) {
+                    let tally: ITally = { majority: false, count: 0, sum: 0 };
+                    competitor.results.forEach((result: number): void => {
+                        if (result <= i + 1) {
+                            tally.count++;
+                            tally.sum += result;
+                        }
+                    });
+                    if (tally.count > this.majority) tally.majority = true;
+                    competitor.tally.push(tally);
+                }
             });
-            return output;
         }
-        public assignRank(rank: number): boolean {
-            this.$log.debug("assignRank", rank);
-            let simpleMajority: ICompetitor[] = this.simpleMajority(rank);
-            this.$log.debug("simpleMajority", rank, simpleMajority.length, simpleMajority);
-            if (simpleMajority.length === 1) {
-                simpleMajority[0].rank = rank;
-                return;
-            }
+        public ranked(): ICompetitor[] {
+            return this.$filter("orderBy")(this.competitors,
+                (): IPredicate[] => {
+                    let predicate: IPredicate[] = [];
+                    for (let i: number = 0; i < this.competitors.length; i++) {
+                        let predicate: IPredicate = function (competitor: ICompetitor): ITally {
+                            return competitor.tally[i];
+                        };
+                    }
+                    return predicate;
+                });
         }
+        public get majority(): number { return Math.ceil(this.judges.length / 2); }
         public calculate(): void {
-            this.assignRank(1);
-            this.assignRank(2);
-            this.assignRank(3);
-            this.assignRank(4);
-            this.assignRank(5);
+            this.tally();
+            this.ranked().forEach(function (competitor: ICompetitor, index: number) {
+                competitor.rank = index + 1;
+            });
         }
         public $postLink(): void { }
     }

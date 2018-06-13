@@ -70,45 +70,52 @@ var Competition;
             }
             return isValid;
         };
+        Controller.prototype.tally = function () {
+            var _this = this;
+            this.competitors.forEach(function (competitor) {
+                competitor.tally = [];
+                var _loop_1 = function (i) {
+                    var tally = { majority: false, count: 0, sum: 0 };
+                    competitor.results.forEach(function (result) {
+                        if (result <= i + 1) {
+                            tally.count++;
+                            tally.sum += result;
+                        }
+                    });
+                    if (tally.count > _this.majority)
+                        tally.majority = true;
+                    competitor.tally.push(tally);
+                };
+                for (var i = 0; i < _this.competitors.length; i++) {
+                    _loop_1(i);
+                }
+            });
+        };
+        Controller.prototype.ranked = function () {
+            var _this = this;
+            return this.$filter("orderBy")(this.competitors, function () {
+                var predicate = [];
+                var _loop_2 = function (i) {
+                    var predicate_1 = function (competitor) {
+                        return competitor.tally[i];
+                    };
+                };
+                for (var i = 0; i < _this.competitors.length; i++) {
+                    _loop_2(i);
+                }
+                return predicate;
+            });
+        };
         Object.defineProperty(Controller.prototype, "majority", {
             get: function () { return Math.ceil(this.judges.length / 2); },
             enumerable: true,
             configurable: true
         });
-        Controller.prototype.majorityCount = function (competitor, rank) {
-            var count = 0;
-            for (var i = 0; i < competitor.results.length; i++) {
-                if (competitor.results[i] <= rank)
-                    count++;
-            }
-            return count;
-        };
-        Controller.prototype.simpleMajority = function (rank) {
-            var _this = this;
-            var output = [];
-            this.competitors.forEach(function (competitor) {
-                if (angular.isDefined(competitor.rank))
-                    return;
-                if (_this.majorityCount(competitor, rank) >= _this.majority)
-                    output.push(competitor);
-            });
-            return output;
-        };
-        Controller.prototype.assignRank = function (rank) {
-            this.$log.debug("assignRank", rank);
-            var simpleMajority = this.simpleMajority(rank);
-            this.$log.debug("simpleMajority", rank, simpleMajority.length, simpleMajority);
-            if (simpleMajority.length === 1) {
-                simpleMajority[0].rank = rank;
-                return;
-            }
-        };
         Controller.prototype.calculate = function () {
-            this.assignRank(1);
-            this.assignRank(2);
-            this.assignRank(3);
-            this.assignRank(4);
-            this.assignRank(5);
+            this.tally();
+            this.ranked().forEach(function (competitor, index) {
+                competitor.rank = index + 1;
+            });
         };
         Controller.prototype.$postLink = function () { };
         Controller.$inject = ["$filter", "$log"];
