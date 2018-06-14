@@ -62,18 +62,17 @@ namespace SSC {
             public ngModel: angular.INgModelController;
             public results: number[][];
             public $postLink(): void {
-                this.ngModel.$parsers.unshift(function (value: any): number { return parseInt(value, 10); });
-                this.ngModel.$validators["min"] = (modelValue: number, viewValue: string): boolean => { return (modelValue >= 1); }
-                this.ngModel.$validators["max"] = (modelValue: number, viewValue: string): boolean => { return (modelValue <= this.results.length); }
-                this.ngModel.$viewChangeListeners.push((): void => {
-                    console.log("nnn");
-                    if (this.ngModel.$invalid) {
-                        this.$element.addClass("is-invalid");
-                        this.$element.removeClass("is-valid");
-                    } else {
-                        this.$element.addClass("is-valid");
-                        this.$element.removeClass("is-invalid");
+                this.ngModel.$parsers.push((value: string): number => {
+                    let rx: RegExp = /^([1-8])$/;
+                    if (rx.test(value)) {
+                        let result: number = parseInt(value, 10);
+                        if (result <= this.results.length) {
+                            this.$element.removeClass("is-invalid").addClass("is-valid");
+                            return result;
+                        }
                     }
+                    this.$element.removeClass("is-valid").addClass("is-invalid");
+                    return;
                 });
             }
         }

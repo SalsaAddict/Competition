@@ -90,19 +90,17 @@ var SSC;
             }
             Controller.prototype.$postLink = function () {
                 var _this = this;
-                this.ngModel.$parsers.unshift(function (value) { return parseInt(value, 10); });
-                this.ngModel.$validators["min"] = function (modelValue, viewValue) { return (modelValue >= 1); };
-                this.ngModel.$validators["max"] = function (modelValue, viewValue) { return (modelValue <= _this.results.length); };
-                this.ngModel.$viewChangeListeners.push(function () {
-                    console.log("nnn");
-                    if (_this.ngModel.$invalid) {
-                        _this.$element.addClass("is-invalid");
-                        _this.$element.removeClass("is-valid");
+                this.ngModel.$parsers.push(function (value) {
+                    var rx = /^([1-8])$/;
+                    if (rx.test(value)) {
+                        var result = parseInt(value, 10);
+                        if (result <= _this.results.length) {
+                            _this.$element.removeClass("is-invalid").addClass("is-valid");
+                            return result;
+                        }
                     }
-                    else {
-                        _this.$element.addClass("is-valid");
-                        _this.$element.removeClass("is-invalid");
-                    }
+                    _this.$element.removeClass("is-valid").addClass("is-invalid");
+                    return;
                 });
             };
             Controller.$inject = ["$element"];
@@ -308,5 +306,5 @@ var Competition;
 })(Competition || (Competition = {}));
 comp.controller("competitionController", SSC.Controller);
 comp.directive("results", SSC.Results.DirectiveFactory());
-//comp.directive("rankInput", Competition.RankInput.DirectiveFactory()); 
+//comp.directive("rankInput", Competition.RankInput.DirectiveFactory());
 //# sourceMappingURL=competition.js.map
