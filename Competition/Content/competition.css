@@ -1,0 +1,18 @@
+﻿body {
+    margin-top: 70px;
+}
+
+table.results {
+    border-collapse: collapse !important;
+}
+
+    table.results th, table.results td {
+        text-align: center !important;
+        vertical-align: middle !important;
+        border-collapse: collapse !important;
+        border: 1px solid silver !important;
+    }
+
+    table.results thead th {
+        white-space: nowrap;
+    }

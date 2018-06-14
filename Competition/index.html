@@ -5,54 +5,31 @@
     <title>Competition</title>
     <link type="text/css" rel="stylesheet" href="Content/bootstrap.min.css" />
     <link type="text/css" rel="stylesheet" href="Content/font-awesome.min.css" />
-    <style>
-        body {
-            margin-top: 70px;
-        }
-
-        table.results th, table.results td {
-            text-align: center !important;
-            vertical-align: middle !important;
-            border-collapse: collapse !important;
-            border: 1px solid silver !important;
-        }
-
-        table.results thead th {
-            white-space: nowrap;
-        }
-
-        table.results {
-            border-collapse: collapse !important;
-        }
-
-    </style>
+    <link type="text/css" rel="stylesheet" href="Content/competition.css" />
     <script src="Scripts/angular.min.js"></script>
     <script src="Scripts/angular-ui/ui-bootstrap-tpls.min.js"></script>
     <script src="Scripts/competition/competition.min.js"></script>
 </head>
 <body ng-controller="competitionController as $ctrl">
+    <nav class="navbar fixed-top navbar-dark bg-dark">
+        <a class="navbar-brand" href="#" ng-bind="$ctrl.competition.name"></a>
+    </nav>
+
     <div class="container-fluid">
-        <form name="$form">
-            <div class="card">
-                <div class="card-header bg-dark text-white">
-                    <span class="h4 card-title" ng-bind="$ctrl.competition.name"></span>
-                    <div class="pull-right">
-                        <div class="form-inline">
-                            <div class="form-row">
-                                <div class="form-group form-group-sm">
-                                    <select ng-model="$ctrl.division" ng-options="division as division.name for division in $ctrl.competition.divisions" class="form-control bg-dark text-white input-sm"></select>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
+        <ul class="nav nav-pills justify-content-center">
+            <li class="nav nav-item" ng-repeat="tab in $ctrl.tabs" ng-show="!$index || $ctrl.calculated">
+                <a class="nav-link" href="#" ng-bind="tab" ng-click="$ctrl.setTab(tab, $event)" ng-class="{ 'active': $ctrl.tab === tab }"></a>
+            </li>
+        </ul>
+        <br />
+        <div ng-show="$ctrl.tab === $ctrl.tabs[0]">
+            <form name="$form">
+                <fieldset ng-disabled="$ctrl.calculated">
                     <table class="table table-condensed table-bordered results">
                         <thead>
                             <tr>
-                                <th rowspan="2">#</th>
-                                <th rowspan="2">Competitor</th>
-                                <th colspan="{{$ctrl.x}}">Judges</th>
+                                <th rowspan="2" colspan="2">Competitor</th>
+                                <th colspan="{{$ctrl.judges.length}}">Judges</th>
                             </tr>
                             <tr>
                                 <th ng-repeat="judge in $ctrl.judges">
@@ -62,20 +39,107 @@
                         </thead>
                         <tbody>
                             <tr ng-repeat="competitor in $ctrl.competitors">
-                                <th ng-bind="competitor.id"></th>
-                                <th ng-bind="competitor.name"></th>
+                                <th>#{{competitor.id}}</th>
+                                <th>{{competitor.name}}</th>
                                 <td ng-repeat="judge in $ctrl.judges">
-                                    <div class="form-row">
-                                        <input type="text" ng-model="$ctrl.results[$parent.$index][$index]" class="form-control text-center" results="$ctrl.results" required />
-                                    </div>
+                                    <input type="text" class="form-control text-center" ng-model="$results.value" results="$ctrl.results" required />
                                 </td>
                             </tr>
                         </tbody>
                     </table>
+                </fieldset>
+                <div class="text-center">
+                    <ul class="list-group">
+                        <li class="list-group-item list-group-item-success" ng-if="$ctrl.calculated">
+                            <i class="fa fa-fw fa-check-circle"></i>
+                            <span>The results have been calculated</span>
+                        </li>
+                        <li class="list-group-item list-group-item-success" ng-if="$form.$valid && !$ctrl.calculated">
+                            <i class="fa fa-fw fa-check-circle"></i>
+                            <span>The judges' scores are valid</span>
+                        </li>
+                        <li class="list-group-item list-group-item-danger" ng-if="$form.$error.required">
+                            <i class="fa fa-fw fa-warning"></i>
+                            <span>Judges must score every competitor</span>
+                        </li>
+                        <li class="list-group-item list-group-item-danger" ng-if="$form.$error.duplicate">
+                            <i class="fa fa-fw fa-warning"></i>
+                            <span>Competitors cannot be tied by any judge</span>
+                        </li>
+                        <li class="list-group-item list-group-item-danger" ng-if="$form.$error.parse || $form.$error.max">
+                            <i class="fa fa-fw fa-warning"></i>
+                            <span>Each score must be a number between 1 and {{$ctrl.competitors.length}}</span>
+                        </li>
+                        <li class="list-group-item" ng-if="!$ctrl.calculated">
+                            <button type="button" class="btn btn-primary" ng-click="$ctrl.calculate()">
+                                <span>Calculate</span>
+                                <i class="fa fa-fw fa-calculator"></i>
+                            </button>
+                        </li>
+                        <li class="list-group-item" ng-if="$ctrl.calculated">
+                            <button type="button" class="btn btn-primary" ng-click="$ctrl.edit()">
+                                <span>Edit Scores</span>
+                                <i class="fa fa-fw fa-edit"></i>
+                            </button>
+                        </li>
+                    </ul>
                 </div>
-            </div>
-        </form>
-        {{$form.$valid}}
+            </form>
+        </div>
+        <div ng-show="$ctrl.tab === $ctrl.tabs[1]">
+            <table class="table table-condensed table-bordered results">
+                <thead>
+                    <tr>
+                        <th rowspan="2">Competitor</th>
+                        <th colspan="{{$ctrl.judges.length}}">Judges Scores</th>
+                        <th colspan="{{$ctrl.competitors.length}}">Tally</th>
+                        <th rowspan="2">Rank</th>
+                    </tr>
+                    <tr>
+                        <th ng-repeat="judge in $ctrl.judges">
+                            <span>#{{$index + 1}}</span>
+                        </th>
+                        <th ng-repeat="competitor in $ctrl.competitors">
+                            <span>1-{{$index + 1}}</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="competitor in $ctrl.competitors | orderBy: 'rank'">
+                        <th>#{{competitor.id}}</th>
+                        <td ng-repeat="judge in $ctrl.judges" ng-bind="$ctrl.results[$ctrl.competitors.indexOf(competitor)][$index]"></td>
+                        <td ng-repeat="column in $ctrl.competitors">
+                            <div ng-show="competitor.tally[$index * 2]">
+                                <b>{{competitor.tally[$index * 2]}}</b>
+                                <br />
+                                <span class="text-muted small">({{competitor.tally[$index * 2 + 1]}})</span>
+                            </div>
+                            <div ng-hide="competitor.tally[$index * 2]">
+                                <span class="text-muted small">No<br />Majority</span>
+                            </div>
+                        </td>
+                        <th class="h2" ng-bind="$ctrl.rank(competitor.rank)"></th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div ng-show="$ctrl.tab === $ctrl.tabs[2]">
+            <table class="table table-condensed table-bordered results">
+                <thead>
+                    <tr>
+                        <th>Rank</th>
+                        <th colspan="2">Competitor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="competitor in $ctrl.competitors | orderBy: 'rank'">
+                        <th class="h2" ng-bind="$ctrl.rank(competitor.rank)"></th>
+                        <th class="h2">#{{competitor.id}}</th>
+                        <th class="h2">{{competitor.name}}</th>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </body>
 </html>
