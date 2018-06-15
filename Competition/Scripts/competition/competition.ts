@@ -81,7 +81,10 @@ namespace SSC {
             this.division.calculated = true;
             this.tab = this.tabs[2];
         }
-        public edit(): void { delete this.division.calculated; }
+        public edit(): void {
+            delete this.division.calculated;
+            this.tab = this.tabs[0];
+        }
         public rank(rank: number): string {
             return ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"][rank - 1];
         }

@@ -11,17 +11,29 @@
     <script src="Scripts/competition/competition.min.js"></script>
 </head>
 <body ng-controller="competitionController as $ctrl">
-    <nav class="navbar fixed-top navbar-dark bg-dark">
+    <nav class="navbar fixed-top navbar-expand navbar-dark bg-dark">
         <a class="navbar-brand" href="#" ng-bind="$ctrl.competition.name"></a>
+        <div class="navbar-collapse">
+            <ul class="navbar-nav mr-auto">
+                <li class="nav-item" ng-repeat="tab in $ctrl.tabs" ng-show="!$index || $ctrl.calculated">
+                    <a class="nav-link" href="#" ng-bind="tab" ng-click="$ctrl.setTab(tab, $event)" ng-class="{ 'active': $ctrl.tab === tab }"></a>
+                </li>
+            </ul>
+            <form class="form-inline">
+                <button type="button" class="btn" ng-click="$ctrl.calculate()"
+                        ng-class="{ 'btn-primary': $form.$valid, 'btn-default': $form.invalid }" 
+                        ng-disabled="$form.$invalid" ng-if="!$ctrl.calculated">
+                    <span>Calculate</span>
+                    <i class="fa fa-fw fa-calculator"></i>
+                </button>
+                <button type="button" class="btn btn-primary" ng-click="$ctrl.edit()" ng-if="$ctrl.calculated">
+                    <span>Edit Scores</span>
+                    <i class="fa fa-fw fa-edit"></i>
+                </button>
+            </form>
+        </div>
     </nav>
-
     <div class="container-fluid">
-        <ul class="nav nav-pills justify-content-center">
-            <li class="nav nav-item" ng-repeat="tab in $ctrl.tabs" ng-show="!$index || $ctrl.calculated">
-                <a class="nav-link" href="#" ng-bind="tab" ng-click="$ctrl.setTab(tab, $event)" ng-class="{ 'active': $ctrl.tab === tab }"></a>
-            </li>
-        </ul>
-        <br />
         <div ng-show="$ctrl.tab === $ctrl.tabs[0]">
             <form name="$form">
                 <fieldset ng-disabled="$ctrl.calculated">
@@ -69,18 +81,6 @@
                         <li class="list-group-item list-group-item-danger" ng-if="$form.$error.parse || $form.$error.max">
                             <i class="fa fa-fw fa-warning"></i>
                             <span>Each score must be a number between 1 and {{$ctrl.competitors.length}}</span>
-                        </li>
-                        <li class="list-group-item" ng-if="!$ctrl.calculated">
-                            <button type="button" class="btn btn-primary" ng-click="$ctrl.calculate()">
-                                <span>Calculate</span>
-                                <i class="fa fa-fw fa-calculator"></i>
-                            </button>
-                        </li>
-                        <li class="list-group-item" ng-if="$ctrl.calculated">
-                            <button type="button" class="btn btn-primary" ng-click="$ctrl.edit()">
-                                <span>Edit Scores</span>
-                                <i class="fa fa-fw fa-edit"></i>
-                            </button>
                         </li>
                     </ul>
                 </div>

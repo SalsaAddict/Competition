@@ -111,7 +111,10 @@ var SSC;
             this.division.calculated = true;
             this.tab = this.tabs[2];
         };
-        Controller.prototype.edit = function () { delete this.division.calculated; };
+        Controller.prototype.edit = function () {
+            delete this.division.calculated;
+            this.tab = this.tabs[0];
+        };
         Controller.prototype.rank = function (rank) {
             return ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"][rank - 1];
         };
